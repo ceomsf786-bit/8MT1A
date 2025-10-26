@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            width: auto;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .score-box {
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .score-box.success {
+            background: #d1fae5;
+            border: 3px solid #10b981;
+            color: #065f46;
+        }
+
+        .score-box.warning {
+            background: #fef3c7;
+            border: 3px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .score-box.error {
+            background: #fee2e2;
+            border: 3px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .question-card {
+            background: #f9fafb;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            background: #e0e7ff;
+            border-color: #667eea;
+        }
+
+        .option.correct {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .option.incorrect {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .option.disabled {
+            cursor: default;
+        }
+
+        .option.disabled:hover {
+            transform: none;
+        }
+
+        .option-letter {
+            font-weight: bold;
+            color: #4b5563;
+            min-width: 25px;
+        }
+
+        .icon {
+            margin-left: auto;
+            font-size: 1.3em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 GRADE 8 MATH</h1>
+            <p>TERM 1</p>
+        </div>
+
+        <button class="btn btn-secondary" onclick="resetQuiz()" id="resetBtn" style="display: none;">↻ Retake Quiz</button>
+
+        <div id="scoreBox" class="hidden"></div>
+        <div id="questionsContainer"></div>
+        <div id="submitSection">
+            <button class="btn" onclick="submitQuiz()">Submit Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // PASTE YOUR MCQ QUESTIONS HERE
+        // ==========================================
+        // Format: Copy and paste your questions below between the [ and ]
+        // Mark correct answers with **bold** or UPPERCASE
+        // Example:
+        // "1. What is the capital of France?\nA) London\nB) **Paris**\nC) Berlin\nD) Madrid"
+        
+        const mcqText = `
+        
+Grade 8 Mathematics MCQs: Whole Numbers, Integers, Common Fractions & Decimal Fractions
+1. What is 25 + 37?
+A) **62**
+B) 63
+C) 61
+D) 64
+
+2. Which number is an integer?
+A) 2.5
+B) **-3**
+C) 3/4
+D) 0.7
+
+3. Simplify: 15 × 0
+A) 1
+B) 15
+C) **0**
+D) Undefined
+
+4. Which of these is a whole number?
+A) -1
+B) 1.5
+C) **4**
+D) 3/2
+
+5. What is the place value of 7 in 5.78?
+A) Ones
+B) **Tenths**
+C) Hundredths
+D) Tens
+
+6. Simplify: (-8) + 3
+A) 5
+B) 11
+C) **-5**
+D) -11
+
+7. Which is greater: -2 or -5?
+A) **-2**
+B) -5
+C) 0
+D) Both equal
+
+8. Convert 0.75 to a fraction.
+A) 3/5
+B) **3/4**
+C) 1/2
+D) 4/5
+
+9. Simplify: 4/8
+A) 3/8
+B) 1/4
+C) **1/2**
+D) 2/4
+
+10. Which is the reciprocal of 2/3?
+A) 3/2
+B) 1/2
+C) 2/3
+D) **3/2**
+
+11. What is (-6) × (-2)?
+A) -12
+B) **12**
+C) 8
+D) -8
+
+12. Simplify: 0.6 + 0.09
+A) 0.609
+B) **0.69**
+C) 0.96
+D) 0.15
+
+13. Simplify: 9 ÷ 3
+A) 1
+B) 6
+C) **3**
+D) 2
+
+14. Which of these is not an integer?
+A) 0
+B) 4
+C) -7
+D) **2.5**
+
+15. Convert 2.5 to a fraction.
+A) 5/2
+B) 3/2
+C) 1/5
+D) **5/2**
+
+16. Simplify: (-10) - (-4)
+A) **-6**
+B) 6
+C) 14
+D) **-6**
+
+17. What is 7 × 8?
+A) 54
+B) **56**
+C) 64
+D) 58
+
+18. Which of these equals 0.25?
+A) 1/3
+B) **1/4**
+C) 2/5
+D) 3/4
+
+19. What is 3/4 of 20?
+A) 10
+B) 12
+C) **15**
+D) 14
+
+20. Simplify: (-3) × 5
+A) 8
+B) **-15**
+C) 15
+D) -8
+
+21. Convert 1.2 to a fraction.
+A) 5/4
+B) 4/5
+C) **6/5**
+D) 3/5
+
+22. Simplify: 1/2 + 1/4
+A) 3/4
+B) **3/4**
+C) 2/4
+D) 1/3
+
+23. Which number is smallest?
+A) -8
+B) -5
+C) 0
+D) **-8**
+
+24. Simplify: 4²
+A) 6
+B) 8
+C) **16**
+D) 12
+
+25. Simplify: 3 × (-4)
+A) -7
+B) 12
+C) **-12**
+D) 7
+
+26. What is 0.1 × 10?
+A) **1**
+B) 0.01
+C) 10
+D) 0.001
+
+27. Which is equal to 5/10?
+A) **1/2**
+B) 1/3
+C) 3/4
+D) 2/5
+
+28. Simplify: 100 ÷ 4
+A) 20
+B) **25**
+C) 30
+D) 40
+
+29. Simplify: (-9) + (-6)
+A) -3
+B) 3
+C) **-15**
+D) 15
+
+30. Convert 0.2 to a fraction.
+A) 1/4
+B) 2/4
+C) **1/5**
+D) 2/5
+
+     
+        `;
+
+        // ==========================================
+        // DO NOT EDIT BELOW THIS LINE
+        // ==========================================
+        
+        function parseQuestions(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const parsed = [];
+            let currentQuestion = null;
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+
+                if (/^\d+\./.test(trimmed)) {
+                    if (currentQuestion && currentQuestion.options.length > 0) {
+                        parsed.push(currentQuestion);
+                    }
+                    currentQuestion = {
+                        id: parsed.length,
+                        question: trimmed.replace(/^\d+\.\s*/, ''),
+                        options: [],
+                        correctAnswer: null
+                    };
+                }
+                else if (/^[A-D][.)]\s/.test(trimmed) && currentQuestion) {
+                    const optionLetter = trimmed[0];
+                    const optionText = trimmed.replace(/^[A-D][.)]\s*/, '');
+                    
+                    currentQuestion.options.push({
+                        letter: optionLetter,
+                        text: optionText
+                    });
+                    
+                    const hasHighlight = /\*\*.*\*\*|\*.*\*|__.*__|[A-Z]{3,}/.test(optionText);
+                    if (hasHighlight || trimmed.includes('✓') || trimmed.includes('(correct)')) {
+                        currentQuestion.correctAnswer = optionLetter;
+                    }
+                }
+            });
+
+            if (currentQuestion && currentQuestion.options.length > 0) {
+                parsed.push(currentQuestion);
+            }
+
+            return parsed;
+        }
+
+        const questions = parseQuestions(mcqText);
+        let userAnswers = {};
+        let quizSubmitted = false;
+
+        function displayQuiz() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            questions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-text';
+                questionDiv.textContent = (idx + 1) + '. ' + q.question;
+                card.appendChild(questionDiv);
+
+                q.options.forEach(opt => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option';
+                    optionDiv.setAttribute('data-qid', q.id);
+                    optionDiv.setAttribute('data-letter', opt.letter);
+                    optionDiv.onclick = function() { selectAnswer(q.id, opt.letter); };
+                    
+                    const letterSpan = document.createElement('span');
+                    letterSpan.className = 'option-letter';
+                    letterSpan.textContent = opt.letter + ')';
+                    
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = opt.text.replace(/\*\*|\*|__|✓|\(correct\)/g, '');
+                    
+                    const iconSpan = document.createElement('span');
+                    iconSpan.className = 'icon';
+                    iconSpan.id = 'icon-' + q.id + '-' + opt.letter;
+                    
+                    optionDiv.appendChild(letterSpan);
+                    optionDiv.appendChild(textSpan);
+                    optionDiv.appendChild(iconSpan);
+                    
+                    card.appendChild(optionDiv);
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        function selectAnswer(questionId, answer) {
+            if (quizSubmitted) return;
+
+            userAnswers[questionId] = answer;
+
+            const allOptions = document.querySelectorAll('.option');
+            allOptions.forEach(opt => {
+                const qId = parseInt(opt.getAttribute('data-qid'));
+                const optLetter = opt.getAttribute('data-letter');
+                
+                if (qId === questionId) {
+                    if (optLetter === answer) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                }
+            });
+        }
+
+        function submitQuiz() {
+            if (Object.keys(userAnswers).length !== questions.length) {
+                alert('Please answer all questions before submitting!');
+                return;
+            }
+
+            quizSubmitted = true;
+
+            let correct = 0;
+            questions.forEach(q => {
+                q.options.forEach(opt => {
+                    const iconId = 'icon-' + q.id + '-' + opt.letter;
+                    const icon = document.getElementById(iconId);
+                    const optionDiv = icon.parentElement;
+                    
+                    optionDiv.classList.add('disabled');
+                    optionDiv.classList.remove('selected');
+                    
+                    if (opt.letter === q.correctAnswer) {
+                        optionDiv.classList.add('correct');
+                        icon.innerHTML = '✓';
+                        icon.style.color = '#10b981';
+                    }
+                    
+                    if (userAnswers[q.id] === opt.letter && opt.letter !== q.correctAnswer) {
+                        optionDiv.classList.add('incorrect');
+                        icon.innerHTML = '✗';
+                        icon.style.color = '#ef4444';
+                    }
+                });
+
+                if (userAnswers[q.id] === q.correctAnswer) {
+                    correct++;
+                }
+            });
+
+            const percentage = Math.round((correct / questions.length) * 100);
+            const scoreBox = document.getElementById('scoreBox');
+            
+            let scoreClass = 'error';
+            let message = '📚 Keep practicing!';
+            
+            if (percentage >= 90) {
+                scoreClass = 'success';
+                message = '🎉 Excellent work!';
+            } else if (percentage >= 70) {
+                scoreClass = 'success';
+                message = '👍 Good job!';
+            } else if (percentage >= 50) {
+                scoreClass = 'warning';
+                message = '💪 Not bad, keep going!';
+            }
+            
+            scoreBox.className = 'score-box ' + scoreClass;
+            scoreBox.innerHTML = '<div>Score: ' + correct + ' / ' + questions.length + ' (' + percentage + '%)</div><div style="margin-top: 10px; font-size: 0.9em;">' + message + '</div>';
+            scoreBox.classList.remove('hidden');
+
+            document.getElementById('submitSection').classList.add('hidden');
+            document.getElementById('resetBtn').style.display = 'block';
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            quizSubmitted = false;
+
+            document.getElementById('scoreBox').classList.add('hidden');
+            document.getElementById('submitSection').classList.remove('hidden');
+            document.getElementById('resetBtn').style.display = 'none';
+            
+            displayQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        displayQuiz();
+    </script>
+</body>
+</html>
